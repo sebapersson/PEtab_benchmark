@@ -1,0 +1,5 @@
+petab==0.1.30
+amici==0.15.0
+fides==0.7.5
+pypesto==0.2.15
+
