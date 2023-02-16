@@ -69,3 +69,15 @@ if [ $1 == "Beer_MolBioSystems2014" ];then
     python benchmark.py Bachmann_MSB2011 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Bachmann_MSB2011 fides ${nMultiStarts}
 fi
+
+
+if [ $1 == "Brannmark_JBC2010" ];then
+    echo "Running benchmark for Brannmark_JBC2010"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Brannmark_JBC2010 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Brannmark_JBC2010 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Brannmark_JBC2010 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Brannmark_JBC2010 fides ${nMultiStarts}
+fi
