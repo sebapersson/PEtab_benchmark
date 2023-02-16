@@ -163,7 +163,7 @@ if __name__ == '__main__':
     writer = OptimizationResultHDF5Writer(hdf_results_file)
     writer.write(result, overwrite=True)
 
-    fvals, times = zip(*[(r.fval, r.time) for r in result.optimize_result])
+    fvals, times, fvals0 = zip(*[(r.fval, r.time, r.fval0) for r in result.optimize_result])
     plt.figure()
     plt.scatter(times, fvals)
     plt.ylabel('fval')
@@ -174,5 +174,5 @@ if __name__ == '__main__':
     plt.savefig(os.path.join('results', prefix + '_fval_time.pdf'))
 
     # Write final f-val and final run-time to file
-    data_write = np.transpose(np.stack([fvals, times]))
+    data_write = np.transpose(np.stack([fvals, times, fvals0]))
     np.savetxt(os.path.join('results', prefix + '_fval_time.csv'), data_write, delimiter=',')
