@@ -29,6 +29,22 @@ get_niter <- function(stat_file, stat_names)
 }
 
 
+get_name_order <- function(stat_file, stat_names)
+{
+  fval = rep(0, length(stat_names))
+  for(i in 1:length(fval)){
+    fval_tmp <- stat_file[[stat_names[i]]]$fval
+    fval[i] <- fval_tmp[length(fval_tmp)]
+  }
+  return(order(fval))
+}
+
+
+file <- "/home/sebpe/Dropbox/PhD/Projects/PEtab_benchmark/pypesto_benchmark/results/Fujita_SciSignal2010__fides.hessian=FIM__1000.hdf5"
+pyPestoResFile <- h5read(file, "/")
+pyPestoResNames <- names(pyPestoResFile)
+
+
 get_pyPesto_results <- function(model_name)
 {
   
@@ -38,10 +54,12 @@ get_pyPesto_results <- function(model_name)
   
   for(i in 1:length(pyPestoFiles)){
   
-    pyPestoData_ <- read_csv(str_c("pypesto_benchmark/results/", pyPestoFiles[i]), col_names = F, col_types = cols()) 
+    pyPestoData_ <- read_csv(str_c("pypesto_benchmark/results/", pyPestoFiles[i]), col_names = F, col_types = cols()) |> 
+      filter(!is.infinite(X1))
     names(pyPestoData_) <- c("Cost", "Run_time")
     pyPestoStatFile <- h5read(pyPestoStatFiles[i], "/")
     pyPestoStatsNames <- names(pyPestoStatFile)
+    pyPestoStatsNames <- pyPestoStatsNames[get_name_order(pyPestoStatFile, pyPestoStatsNames)]
     
     if(str_detect(pyPestoFiles[i], "fides.hessian=FIM") == T){
       pyPestoData_ <- pyPestoData_ |> 
@@ -194,7 +212,7 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
 
 process_model("Boehm_JProteomeRes2014")
 
-process_model("Fiedler_BMC2016", ylim=c(0.9, 1e3), solver="QNDF")
+process_model("Fiedler_BMC2016", ylim=c(0.9, 1e3), jl_solver="QNDF")
 
-
+process_model("Fujita_SciSignal2010", ylim=c(0.9, 1e9))
 
