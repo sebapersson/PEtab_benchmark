@@ -65,9 +65,9 @@ if [ $1 == "Beer_MolBioSystems2014" ];then
     cd Master-Thesis 
     bash Benchmarks/Run_parameter_estimation.sh Beer_MolBioSystems2014 ${nMultiStarts} "${juliaOptimizers}"
     cd ../pypesto_benchmark
-    python benchmark.py Bachmann_MSB2011 fides.hessian=FIM ${nMultiStarts}
-    python benchmark.py Bachmann_MSB2011 fides.hessian=BFGS ${nMultiStarts}
-    python benchmark.py Bachmann_MSB2011 fides ${nMultiStarts}
+    python benchmark.py Beer_MolBioSystems2014 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Beer_MolBioSystems2014 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Beer_MolBioSystems2014 fides ${nMultiStarts}
 fi
 
 
