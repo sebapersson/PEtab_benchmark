@@ -40,11 +40,6 @@ get_name_order <- function(stat_file, stat_names)
 }
 
 
-file <- "/home/sebpe/Dropbox/PhD/Projects/PEtab_benchmark/pypesto_benchmark/results/Fujita_SciSignal2010__fides.hessian=FIM__1000.hdf5"
-pyPestoResFile <- h5read(file, "/")
-pyPestoResNames <- names(pyPestoResFile)
-
-
 get_pyPesto_results <- function(model_name)
 {
   
@@ -134,7 +129,7 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
                          bind_rows(data_pyPesto) |> 
                          mutate(Cost_norm = Cost - min(Cost) + 1))
   
-  data_run_time <- data_tot |> group_by(Alg) |> summarise(median_run_time = median(Run_time, na.rm = T))
+  data_run_time <- data_tot |> group_by(Alg, software) |> summarise(median_run_time = median(Run_time, na.rm = T))
   pos <- data_run_time$Alg[order(data_run_time$median_run_time)]
   
   p1 <- ggplot(data_tot, aes(Alg, Run_time, fill=software)) + 
@@ -145,6 +140,20 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
     scale_x_discrete(limits = pos) + 
     scale_fill_manual(values = cbPalette, name = "Software") +
     labs(x = "", y = "Run time [s]", title = str_c("Run time ", model_name)) +
+    my_theme + 
+    theme(plot.background = element_rect(fill = "white"))
+  
+  # Normalized run-time
+  data_run_time <- data_run_time |> 
+    mutate(n_time = median_run_time / min(data_run_time$median_run_time)) |> 
+    mutate(str_write = sprintf("%.1f", n_time))
+    
+  p1_ <- ggplot(data_run_time, aes(Alg, n_time, fill = software)) + 
+    geom_bar(stat="identity") + 
+    geom_text(aes(y = n_time+0.3, label=str_write), size=8) +
+    scale_x_discrete(limits = pos) + 
+    labs(x = "", y = "Median run-time normalized by fastest algorithm", title = str_c("Normalised median run time ", model_name)) +
+    scale_fill_manual(values = cbPalette[-1], name = "Software") + 
     my_theme + 
     theme(plot.background = element_rect(fill = "white"))
   
@@ -203,6 +212,7 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
   if(!dir.exists(dir_save)) dir.create(dir_save, recursive = T)
   
   ggsave(str_c(dir_save, "Run_time.png"), p1, width = BASE_WIDTH*2.3, height = BASE_HEIGHT*2, dpi=300)
+  ggsave(str_c(dir_save, "Run_time_norm.png"), p1_, width = BASE_WIDTH*2.3, height = BASE_HEIGHT*2, dpi=300)
   ggsave(str_c(dir_save, "Waterfall.png"), p2, width = BASE_WIDTH*2, height = BASE_HEIGHT*2, dpi=300)
   ggsave(str_c(dir_save, "Cost_vs_time.png"), p3, width = BASE_WIDTH*2, height = BASE_HEIGHT*2, dpi=300)
   gtsave(my_table, str_c(dir_save, "Convergence_statistics.html"))
