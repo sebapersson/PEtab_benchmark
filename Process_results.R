@@ -46,15 +46,20 @@ get_pyPesto_results <- function(model_name)
   pyPestoFiles <- list.files("pypesto_benchmark/results")[str_detect(list.files("pypesto_benchmark/results"), str_c(model_name, ".+", ".csv"))]
   pyPestoStatFiles <- str_c("pypesto_benchmark/stats/",  list.files("pypesto_benchmark/stats")[str_detect(list.files("pypesto_benchmark/stats"), str_c(model_name, ".+", ".hdf5"))])
   pyPestoData <- tibble()
-  
   for(i in 1:length(pyPestoFiles)){
   
     pyPestoData_ <- read_csv(str_c("pypesto_benchmark/results/", pyPestoFiles[i]), col_names = F, col_types = cols()) |> 
       filter(!is.infinite(X1))
-    names(pyPestoData_) <- c("Cost", "Run_time")
+    if(length(names(pyPestoData_)) == 2){
+      names(pyPestoData_) <- c("Cost", "Run_time")
+    }else{
+      names(pyPestoData_) <- c("Cost", "Run_time", "Cost_x0")      
+    }
+      
     pyPestoStatFile <- h5read(pyPestoStatFiles[i], "/")
     pyPestoStatsNames <- names(pyPestoStatFile)
     pyPestoStatsNames <- pyPestoStatsNames[get_name_order(pyPestoStatFile, pyPestoStatsNames)]
+    pyPestoData_ <- pyPestoData_[1:length(pyPestoStatsNames), ]
     
     if(str_detect(pyPestoFiles[i], "fides.hessian=FIM") == T){
       pyPestoData_ <- pyPestoData_ |> 
@@ -127,7 +132,8 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
   data_tot <- get_rank(data_julia |> 
                          select(Cost, Run_time, Alg, Solver, N_iter, software) |> 
                          bind_rows(data_pyPesto) |> 
-                         mutate(Cost_norm = Cost - min(Cost) + 1))
+                         mutate(Cost_norm = Cost - min(Cost) + 1)) |> 
+    filter(!is.infinite(Cost))
   
   data_run_time <- data_tot |> group_by(Alg, software) |> summarise(median_run_time = median(Run_time, na.rm = T))
   pos <- data_run_time$Alg[order(data_run_time$median_run_time)]
@@ -226,3 +232,4 @@ process_model("Fiedler_BMC2016", ylim=c(0.9, 1e3), jl_solver="QNDF")
 
 process_model("Fujita_SciSignal2010", ylim=c(0.9, 1e9))
 
+process_model("Brannmark_JBC2010", ylim=c(0.9, 1e9))
