@@ -163,7 +163,7 @@ if __name__ == '__main__':
     writer = OptimizationResultHDF5Writer(hdf_results_file)
     writer.write(result, overwrite=True)
 
-    fvals, times, fvals0 = zip(*[(r.fval, r.time) for r in result.optimize_result])
+    fvals, times = zip(*[(r.fval, r.time) for r in result.optimize_result])
     plt.figure()
     plt.scatter(times, fvals)
     plt.ylabel('fval')
