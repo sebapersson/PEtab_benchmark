@@ -105,3 +105,15 @@ if [ $1 == "Weber_BMC2015" ];then
     python benchmark.py Weber_BMC2015 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Weber_BMC2015 fides ${nMultiStarts}
 fi
+
+
+if [ $1 == "Zheng_PNAS2012" ];then
+    echo "Running benchmark for Zheng_PNAS2012"
+    juliaOptimizers="OptimIPNewtonGN FidesBFGS FidesGN"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Zheng_PNAS2012 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Zheng_PNAS2012 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Zheng_PNAS2012 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Zheng_PNAS2012 fides ${nMultiStarts}
+fi
