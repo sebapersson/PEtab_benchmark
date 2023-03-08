@@ -2,6 +2,11 @@
 eval "$(conda shell.bash hook)"
 conda activate PeTab
 
+# Run the benchmark in Julia
+cd Master-Thesis
+bash Benchmarks/Run_cost_grad_hessian.sh Gradient_cost_small_models
+cd ..
+
 # Download AMICI and Benchmark collection
 git clone https://github.com/AMICI-dev/AMICI.git
 
