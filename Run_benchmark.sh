@@ -107,13 +107,13 @@ if [ $1 == "Weber_BMC2015" ];then
 fi
 
 
-if [ $1 == "Zheng_PNAS2012" ];then
-    echo "Running benchmark for Zheng_PNAS2012"
-    juliaOptimizers="OptimIPNewtonGN FidesBFGS FidesGN"
+if [ $1 == "Sneyd_PNAS2002" ];then
+    echo "Running benchmark for Sneyd_PNAS2002"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
     cd Master-Thesis 
-    bash Benchmarks/Run_parameter_estimation.sh Zheng_PNAS2012 ${nMultiStarts} "${juliaOptimizers}"
+    bash Benchmarks/Run_parameter_estimation.sh Sneyd_PNAS2002 ${nMultiStarts} "${juliaOptimizers}"
     cd ../pypesto_benchmark
-    python benchmark.py Zheng_PNAS2012 fides.hessian=FIM ${nMultiStarts}
-    python benchmark.py Zheng_PNAS2012 fides.hessian=BFGS ${nMultiStarts}
-    python benchmark.py Zheng_PNAS2012 fides ${nMultiStarts}
+    python benchmark.py Sneyd_PNAS2002 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Sneyd_PNAS2002 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Sneyd_PNAS2002 fides ${nMultiStarts}
 fi
