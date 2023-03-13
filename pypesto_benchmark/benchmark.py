@@ -115,6 +115,9 @@ if __name__ == '__main__':
     set_solver_model_options(objective.amici_solver,
                              objective.amici_model)
 
+    if MODEL_NAME in ['Isensee_JCB2018', 'Lucarelli_CellSystems2018']:
+        objective.n_threads = 2
+ 
     objective.guess_steadystate = False
 
     os.makedirs('stats', exist_ok=True)

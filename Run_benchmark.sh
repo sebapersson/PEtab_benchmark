@@ -117,3 +117,15 @@ if [ $1 == "Sneyd_PNAS2002" ];then
     python benchmark.py Sneyd_PNAS2002 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Sneyd_PNAS2002 fides ${nMultiStarts}
 fi
+
+
+if [ $1 == "Lucarelli_CellSystems2018" ];then
+    echo "Running benchmark for Lucarelli_CellSystems2018"
+    juliaOptimizers="FidesBFGS FidesGN"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Lucarelli_CellSystems2018 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Lucarelli_CellSystems2018 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Lucarelli_CellSystems2018 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Lucarelli_CellSystems2018 fides ${nMultiStarts}
+fi
