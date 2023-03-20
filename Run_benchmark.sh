@@ -141,3 +141,14 @@ if [ $1 == "Schwen_PONE2014" ];then
     python benchmark.py Schwen_PONE2014 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Schwen_PONE2014 fides ${nMultiStarts}
 fi
+
+if [ $1 == "Elowitz_Nature2000" ];then
+    echo "Running benchmark for Elowitz_Nature2000"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Elowitz_Nature2000 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Elowitz_Nature2000 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Elowitz_Nature2000 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Elowitz_Nature2000 fides ${nMultiStarts}
+fi
