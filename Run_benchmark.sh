@@ -9,7 +9,7 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate PeTab
 
-nMultiStarts="1000"
+nMultiStarts="2"
 
 if [ $1 == "Boehm_JProteomeRes2014" ];then
     echo "Running benchmark for Boehm_JProteomeRes2014"
@@ -135,12 +135,13 @@ if [ $1 == "Schwen_PONE2014" ];then
     echo "Running benchmark for Schwen_PONE2014"
     juliaOptimizers="OptimIPNewtonBlockAutoDiff OptimIPNewtonGN FidesBFGS FidesGN FidesBlockAutoHess"
     cd Master-Thesis 
-    bash Benchmarks/Run_parameter_estimation.sh Schwen_PONE2014 ${nMultiStarts} "${juliaOptimizers}"
+    #bash Benchmarks/Run_parameter_estimation.sh Schwen_PONE2014 ${nMultiStarts} "${juliaOptimizers}"
     cd ../pypesto_benchmark
     python benchmark.py Schwen_PONE2014 fides.hessian=FIM ${nMultiStarts}
     python benchmark.py Schwen_PONE2014 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Schwen_PONE2014 fides ${nMultiStarts}
 fi
+
 
 if [ $1 == "Elowitz_Nature2000" ];then
     echo "Running benchmark for Elowitz_Nature2000"
@@ -152,3 +153,16 @@ if [ $1 == "Elowitz_Nature2000" ];then
     python benchmark.py Elowitz_Nature2000 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Elowitz_Nature2000 fides ${nMultiStarts}
 fi
+
+
+if [ $1 == "Crauste_CellSystems2017" ];then
+    echo "Running benchmark for Crauste_CellSystems2017"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Crauste_CellSystems2017 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Crauste_CellSystems2017 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Crauste_CellSystems2017 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Crauste_CellSystems2017 fides ${nMultiStarts}
+fi
+
