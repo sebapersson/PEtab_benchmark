@@ -9,7 +9,7 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate PeTab
 
-nMultiStarts="2"
+nMultiStarts="1000"
 
 if [ $1 == "Boehm_JProteomeRes2014" ];then
     echo "Running benchmark for Boehm_JProteomeRes2014"
