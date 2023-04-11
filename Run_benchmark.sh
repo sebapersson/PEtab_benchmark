@@ -135,7 +135,7 @@ if [ $1 == "Schwen_PONE2014" ];then
     echo "Running benchmark for Schwen_PONE2014"
     juliaOptimizers="OptimIPNewtonBlockAutoDiff OptimIPNewtonGN FidesBFGS FidesGN FidesBlockAutoHess"
     cd Master-Thesis 
-    #bash Benchmarks/Run_parameter_estimation.sh Schwen_PONE2014 ${nMultiStarts} "${juliaOptimizers}"
+    bash Benchmarks/Run_parameter_estimation.sh Schwen_PONE2014 ${nMultiStarts} "${juliaOptimizers}"
     cd ../pypesto_benchmark
     python benchmark.py Schwen_PONE2014 fides.hessian=FIM ${nMultiStarts}
     python benchmark.py Schwen_PONE2014 fides.hessian=BFGS ${nMultiStarts}
@@ -166,3 +166,14 @@ if [ $1 == "Crauste_CellSystems2017" ];then
     python benchmark.py Crauste_CellSystems2017 fides ${nMultiStarts}
 fi
 
+
+if [ $1 == "Isensee_JCB2018" ];then
+    echo "Running benchmark for Isensee_JCB2018"
+    juliaOptimizers="FidesBFGS FidesGN"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Isensee_JCB2018 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Isensee_JCB2018 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Isensee_JCB2018 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Isensee_JCB2018 fides ${nMultiStarts}
+fi
