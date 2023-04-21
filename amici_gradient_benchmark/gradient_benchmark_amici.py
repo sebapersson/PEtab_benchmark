@@ -10,23 +10,25 @@ from pathlib import Path
 
 import petab
 import amici
-from amici.petab_objective import simulate_petab
-def main():
-    """Simulate the model specified on the command line"""
+from amici.petab_objective import simulate_petab, RDATAS
+from amici.petab_import import import_petab_problem
+"""Simulate the model specified on the command line"""
 
+if __name__ == "__main__":
     model = sys.argv[1]
 
-    benchmark_dir = Path(__file__).parent / 'pypesto_benchmark' / 'Benchmark-Models-PEtab'
-    petab_yaml = 'Benchmark-Models-PEtab'
+    benchmark_dir = Path(__file__).parents[1] / 'pypesto_benchmark' / \
+                    'Benchmark-Models-PEtab' / 'Benchmark-Models'
+    petab_yaml = benchmark_dir / model / f'{model}.yaml'
 
     # load PEtab files
     problem = petab.Problem.from_yaml(petab_yaml)
     petab.flatten_timepoint_specific_output_overrides(problem)
-    problem.import_model()
 
     # load model
-    amici_model = problem.create_model()
-    amici_solver = problem.create_solver()
+    amici_model = import_petab_problem(problem)
+    amici_solver = amici_model.getSolver()
+
 
     amici_solver.setAbsoluteTolerance(1e-8)
     amici_solver.setRelativeTolerance(1e-8)
@@ -36,39 +38,38 @@ def main():
             amici.SteadyStateSensitivityMode.integrationOnly
         )
 
-    times = dict()
+    times = list()
 
-    failures = 0
+    failures = list()
 
-    parameters = pd.read_csv(parameter_file)
+    parameter_dir = Path(__file__).parents[1] / 'Intermediate' / \
+                    'Parameters_test_gradient'
+    parameters = pd.read_csv(parameter_dir / f'{model}.csv')
 
-    for parameter in parameters:
+    for _, parameter in parameters.iterrows():
         amici_solver.setSensitivityMethod(amici.SensitivityMethod.adjoint)
         amici_solver.setSensitivityOrder(amici.SensitivityOrder.first)
 
-        problem_parameters = dict(zip(parameters.index, parameter))
+        problem_parameters = dict(parameter)
 
         res_repeats = [
             simulate_petab(
                 petab_problem=problem, amici_model=amici_model,
                 solver=amici_solver, problem_parameters=problem_parameters,
-                scaled_gradients=True,
                 scaled_parameters=True,
+                scaled_gradients=True,
             )
             for _ in range(3)  # repeat to get more stable timings
         ]
 
         times.append(np.mean([
-            sum(r.cpu_time + r.cpu_timeB + r.preeq_cpu_time + r.preeq_cpu_timeB for r in res[RDATAS]) / 1000
-            # only forwards/backwards simulation
+            sum(
+                r.cpu_time + r.cpu_timeB for r in res[RDATAS]
+            ) / 1000
             for res in res_repeats
         ]))
-        failures += not all(rdata.status == amici.AMICI_SUCCESS for rdata in rdatas)
+        failures.append(not all(r.status == amici.AMICI_SUCCESS for r in res_repeats[0][RDATAS]))
 
-    pd.Series(times).to_csv(
-        f'./amici_gradient_benchmark/{model}_benchmark.csv'
+    df = pd.DataFrame(dict(time=times, failed=failures)).to_csv(
+        parameter_dir / f'{model}_results.csv'
     )
-
-
-if __name__ == "__main__":
-    main()
