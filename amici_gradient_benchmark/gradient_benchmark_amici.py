@@ -46,29 +46,27 @@ if __name__ == "__main__":
                     'Parameters_test_gradient'
     parameters = pd.read_csv(parameter_dir / f'{model}.csv')
 
-    for _, parameter in parameters.iterrows():
+    for ir, parameter in parameters.iterrows():
         amici_solver.setSensitivityMethod(amici.SensitivityMethod.adjoint)
         amici_solver.setSensitivityOrder(amici.SensitivityOrder.first)
 
         problem_parameters = dict(parameter)
 
-        res_repeats = [
-            simulate_petab(
-                petab_problem=problem, amici_model=amici_model,
-                solver=amici_solver, problem_parameters=problem_parameters,
-                scaled_parameters=True,
-                scaled_gradients=True,
-            )
-            for _ in range(3)  # repeat to get more stable timings
-        ]
+        res = simulate_petab(
+            petab_problem=problem, amici_model=amici_model,
+            solver=amici_solver, problem_parameters=problem_parameters,
+            scaled_parameters=True,
+            scaled_gradients=True,
+        )
+        times.append(sum(r.cpu_time + r.cpu_timeB for r in res[RDATAS]))
+        failures.append(not all(r.status == amici.AMICI_SUCCESS for r in res[RDATAS]))
+        print(f'{ir + 1}/{len(parameters)} done')
 
-        times.append(np.mean([
-            sum(
-                r.cpu_time + r.cpu_timeB for r in res[RDATAS]
-            ) / 1000
-            for res in res_repeats
-        ]))
-        failures.append(not all(r.status == amici.AMICI_SUCCESS for r in res_repeats[0][RDATAS]))
+    times = np.asarray(times)
+    failures = np.asarray(failures)
+    avg_time = times[np.logical_not(failures)].mean()
+
+    print(f'finished {model}, average execution time was {avg_time} with {failures.sum()} failures.')
 
     df = pd.DataFrame(dict(time=times, failed=failures)).to_csv(
         parameter_dir / f'{model}_results.csv'
