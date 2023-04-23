@@ -58,14 +58,13 @@ if __name__ == "__main__":
         res = simulate_petab(
             petab_problem=problem, amici_model=amici_model,
             solver=amici_solver, problem_parameters=problem_parameters,
-            scaled_parameters=True,
-            scaled_gradients=True,
+            scaled_parameters=True
         )
         sim_times.append(sum(r.cpu_time + r.cpu_timeB for r in res[RDATAS]) / 1000)
         preeq_times.append(sum(r.preeq_cpu_time + r.preeq_cpu_timeB for r in res[RDATAS]) / 1000)
         failures.append(not all(r.status == amici.AMICI_SUCCESS for r in res[RDATAS]))
-        grads.append(res[SLLH])
-
+        grads.append([r.sllh for r in res[RDATAS]])
+        
         msg = f'{ir + 1}/{len(parameters)} done'
 
         if failures[-1]:
@@ -75,18 +74,16 @@ if __name__ == "__main__":
     sim_times = np.asarray(sim_times)
     preeq_times = np.asarray(preeq_times)
     failures = np.asarray(failures)
-    grads = {k: np.asarray([dic[k] for dic in grads]) for k in grads[0]}
     avg_time = sim_times[np.logical_not(failures)].mean()
+    df_grads = pd.DataFrame(np.concatenate(grads), columns=list(parameters.columns))
 
     print(f'finished {model}, average execution time was {avg_time} s with {failures.sum()} failures.')
 
     df = pd.DataFrame({
         ('simulation time',): sim_times,
         ('preequilibraiton time',): preeq_times,
-        ('failed',): failures,
-        ** {
-            ('gradient', par): vals for par, vals in grads.items()
-        }
+        ('failed',): failures
     }).to_csv(
         parameter_dir / f'{model}_results.csv'
     )
+    df_grads.to_csv(parameter_dir / f'{model}_results_grad.csv')
