@@ -9,6 +9,7 @@ from pypesto.store import OptimizationResultHDF5Writer
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
+import amici
 from compile_petab import load_problem
 from typing import Dict
 
@@ -17,9 +18,12 @@ def set_solver_model_options(solver, model):
     solver.setMaxSteps(int(1e4))
     solver.setAbsoluteTolerance(1e-8)
     solver.setRelativeTolerance(1e-8)
-    solver.setNewtonStepSteadyStateCheck(True)
+    if model.getName() in ('Isensee_JCB2018'):
+        model.setSteadyStateSensitivityMode(amici.SteadyStateSensitivityMode.integrationOnly)
+    else:
+        solver.setNewtonStepSteadyStateCheck(True)
 
-
+        
 def get_optimizer(optimizer_name: str, history_file: str,
                   parsed_options: Dict):
     if optimizer_name == 'fides':
@@ -99,7 +103,8 @@ if __name__ == '__main__':
     }
 
     # enable conservation law support
-    os.environ['AMICI_EXPERIMENTAL_SBML_NONCONST_CLS'] = 'TRUE'
+    if MODEL_NAME != 'Isensee_JCB2018':
+        os.environ['AMICI_EXPERIMENTAL_SBML_NONCONST_CLS'] = 'TRUE'
 
     petab_problem, problem = load_problem(
         MODEL_NAME, extend_bounds=float(parsed_options.pop('ebounds', 1.0))
@@ -167,6 +172,11 @@ if __name__ == '__main__':
     writer.write(result, overwrite=True)
 
     fvals, times = zip(*[(r.fval, r.time) for r in result.optimize_result])
+
+    # Write final f-val and final run-time to file
+    data_write = np.transpose(np.stack([fvals, times]))
+    np.savetxt(os.path.join('results', prefix + '_fval_time.csv'), data_write, delimiter=',')
+
     plt.figure()
     plt.scatter(times, fvals)
     plt.ylabel('fval')
@@ -175,7 +185,3 @@ if __name__ == '__main__':
     plt.yscale('log')
     plt.tight_layout()
     plt.savefig(os.path.join('results', prefix + '_fval_time.pdf'))
-
-    # Write final f-val and final run-time to file
-    data_write = np.transpose(np.stack([fvals, times]))
-    np.savetxt(os.path.join('results', prefix + '_fval_time.csv'), data_write, delimiter=',')
