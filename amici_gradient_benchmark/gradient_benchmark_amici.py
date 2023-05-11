@@ -21,7 +21,7 @@ if __name__ == "__main__":
     model = sys.argv[1]
 
     benchmark_dir = Path(__file__).parents[1] / 'pypesto_benchmark' / \
-                    'Benchmark-Models-PEtab' / 'Benchmark-Models'
+                        'Benchmark-Models-PEtab' / 'Benchmark-Models'
     petab_yaml = benchmark_dir / model / f'{model}.yaml'
 
     # load PEtab files
@@ -36,9 +36,7 @@ if __name__ == "__main__":
     amici_solver.setRelativeTolerance(1e-8)
     amici_solver.setMaxSteps(int(1e4))
     if model in ('Brannmark_JBC2010', 'Isensee_JCB2018'):
-        amici_model.setSteadyStateSensitivityMode(
-            amici.SteadyStateSensitivityMode.integrationOnly
-        )
+        amici_model.setSteadyStateSensitivityMode(amici.SteadyStateSensitivityMode.integrationOnly)
 
     sim_times = list()
     preeq_times = list()
@@ -46,7 +44,7 @@ if __name__ == "__main__":
     grads = list()
 
     parameter_dir = Path(__file__).parents[1] / 'Intermediate' / \
-                    'Parameters_test_gradient'
+                        'Parameters_test_gradient'
     parameters = pd.read_csv(parameter_dir / f'{model}.csv')
 
     for ir, parameter in parameters.iterrows():
@@ -58,13 +56,12 @@ if __name__ == "__main__":
         res = simulate_petab(
             petab_problem=problem, amici_model=amici_model,
             solver=amici_solver, problem_parameters=problem_parameters,
-            scaled_parameters=True
-        )
+            scaled_parameters=True)
         sim_times.append(sum(r.cpu_time + r.cpu_timeB for r in res[RDATAS]) / 1000)
         preeq_times.append(sum(r.preeq_cpu_time + r.preeq_cpu_timeB for r in res[RDATAS]) / 1000)
         failures.append(not all(r.status == amici.AMICI_SUCCESS for r in res[RDATAS]))
-        grads.append([r.sllh for r in res[RDATAS]])
-        
+        grads.append(res[SLLH])
+            
         msg = f'{ir + 1}/{len(parameters)} done'
 
         if failures[-1]:
@@ -75,15 +72,21 @@ if __name__ == "__main__":
     preeq_times = np.asarray(preeq_times)
     failures = np.asarray(failures)
     avg_time = sim_times[np.logical_not(failures)].mean()
-    df_grads = pd.DataFrame(np.concatenate(grads), columns=list(parameters.columns))
+    data_grads = np.zeros((len(parameters), len(parameters.columns)))
+    for i in range(len(grads)):
+        if grads[i] != None:
+            data_grads[i, :] = np.asarray([grads[i][k] for k in grads[i]])
+            parameters_names = [k for k in grads[i]]
+
+    df_grads = pd.DataFrame(data_grads, columns=list(parameters_names))
 
     print(f'finished {model}, average execution time was {avg_time} s with {failures.sum()} failures.')
 
     df = pd.DataFrame({
-        ('simulation time',): sim_times,
-        ('preequilibraiton time',): preeq_times,
-        ('failed',): failures
-    }).to_csv(
-        parameter_dir / f'{model}_results.csv'
-    )
+            ('simulation time',): sim_times,
+            ('preequilibraiton time',): preeq_times,
+            ('failed',): failures
+        }).to_csv(
+            parameter_dir / f'{model}_results.csv'
+        )
     df_grads.to_csv(parameter_dir / f'{model}_results_grad.csv')
