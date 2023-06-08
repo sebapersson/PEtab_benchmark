@@ -177,3 +177,17 @@ if [ $1 == "Isensee_JCB2018" ];then
     python benchmark.py Isensee_JCB2018 fides.hessian=BFGS ${nMultiStarts}
     python benchmark.py Isensee_JCB2018 fides ${nMultiStarts}
 fi
+
+
+if [ $1 == "Borghans_BiophysChem1997" ];then
+    echo "Running benchmark for Borghans_BiophysChem1997"
+    juliaOptimizers="OptimIPNewtonGN FidesBFGS FidesGN"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Borghans_BiophysChem1997 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Borghans_BiophysChem1997 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Borghans_BiophysChem1997 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Borghans_BiophysChem1997 fides ${nMultiStarts}
+fi
+
+
