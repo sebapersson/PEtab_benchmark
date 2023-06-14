@@ -191,3 +191,15 @@ if [ $1 == "Borghans_BiophysChem1997" ];then
 fi
 
 
+if [ $1 == "Okuonghae_ChaosSolitonsFractals2020" ];then
+    echo "Running benchmark for Okuonghae_ChaosSolitonsFractals2020"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Okuonghae_ChaosSolitonsFractals2020 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Okuonghae_ChaosSolitonsFractals2020 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Okuonghae_ChaosSolitonsFractals2020 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Okuonghae_ChaosSolitonsFractals2020 fides ${nMultiStarts}
+fi
+
+
