@@ -203,3 +203,14 @@ if [ $1 == "Okuonghae_ChaosSolitonsFractals2020" ];then
 fi
 
 
+if [ $1 == "Oliveira_NatCommun2021" ];then
+    echo "Running benchmark for Oliveira_NatCommun2021"
+    juliaOptimizers="OptimIPNewtonAutoHess OptimIPNewtonGN FidesBFGS FidesGN FidesAutoHess"
+    cd Master-Thesis 
+    bash Benchmarks/Run_parameter_estimation.sh Oliveira_NatCommun2021 ${nMultiStarts} "${juliaOptimizers}"
+    cd ../pypesto_benchmark
+    python benchmark.py Oliveira_NatCommun2021 fides.hessian=FIM ${nMultiStarts}
+    python benchmark.py Oliveira_NatCommun2021 fides.hessian=BFGS ${nMultiStarts}
+    python benchmark.py Oliveira_NatCommun2021 fides ${nMultiStarts}
+fi
+
