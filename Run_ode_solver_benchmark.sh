@@ -20,6 +20,6 @@ fi
 
 if [ $1 == "Test_random_parameters_big_models" ];then
     cd Master-Thesis 
-    bash Benchmarks/Run_ode_solvers.sh Test_random_parameters
+    bash Benchmarks/Run_ode_solvers.sh Test_random_parameters_big_models
     exit 0
 fi

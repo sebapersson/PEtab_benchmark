@@ -1,3 +1,6 @@
+# Run ODE solver benchmarks with 1 command line input (for accepted arguments see README)
+
+
 # Neede to load Conda environment to have AMICI 
 eval "$(conda shell.bash hook)"
 conda activate PeTab
@@ -33,7 +36,32 @@ if [ $1 == "Nominal_values" ];then
     rm -rf AMICI
 fi 
 
-if [ $1 == "Adjoint_amici" ];then
+
+if [ $1 == "Fix_parameters" ];then
+    cd Master-Thesis
+    bash Benchmarks/Run_cost_grad_hessian.sh Fix_parameters
+fi 
+
+
+if [ $1 == "Test_chunks" ];then
+    cd Master-Thesis
+    bash Benchmarks/Run_cost_grad_hessian.sh Test_chunks
+fi 
+
+
+if [ $1 == "Test_adjoint_random_julia" ];then
+    cd Master-Thesis
+    bash Benchmarks/Run_cost_grad_hessian.sh Hessian_nominal_values
+fi 
+
+
+if [ $1 == "Test_adjoint_random_julia" ];then
+    cd Master-Thesis
+    bash Benchmarks/Run_cost_grad_hessian.sh Hessian_cost_small_models
+fi 
+
+
+if [ $1 == "Test_adjoint_random_amici" ];then
     python amici_gradient_benchmark/gradient_benchmark_amici.py Boehm_JProteomeRes2014
     python amici_gradient_benchmark/gradient_benchmark_amici.py Bachmann_MSB2011
     python amici_gradient_benchmark/gradient_benchmark_amici.py Lucarelli_CellSystems2018
