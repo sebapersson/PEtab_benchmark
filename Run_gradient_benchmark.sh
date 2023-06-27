@@ -33,9 +33,9 @@ if [ $1 == "Nominal_values" ];then
     rm -rf AMICI
 fi 
 
-if [ $1 == "Adjoint" ];then
+if [ $1 == "Adjoint_amici" ];then
     python amici_gradient_benchmark/gradient_benchmark_amici.py Boehm_JProteomeRes2014
-    python amici_gradient_benchmark/gradient_benchmark_amici.py Bachmann_MSB2011.csv
+    python amici_gradient_benchmark/gradient_benchmark_amici.py Bachmann_MSB2011
     python amici_gradient_benchmark/gradient_benchmark_amici.py Lucarelli_CellSystems2018
     python amici_gradient_benchmark/gradient_benchmark_amici.py Isensee_JCB2018 
     python amici_gradient_benchmark/gradient_benchmark_amici.py Smith_BMCSystBiol2013 
