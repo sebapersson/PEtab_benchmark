@@ -112,8 +112,8 @@ function benchmarkCostGrad(petab_model::PEtabModel,
                          What_calc=what_compute,
                          Method_info=method_info,
                          Model = petab_model.model_name,
-                         abstol = ode_solver_gradient.abstol,
-                         reltol = ode_solver_gradient.reltol,
+                         abstol = ode_solver_gradient.abstol_adj,
+                         reltol = ode_solver_gradient.reltol_adj,
                          N_param_fixed=writeParamFixed,
                          I_parameter=iParameter,
                          chunk_size = "0",
@@ -130,8 +130,8 @@ function benchmarkCostGrad(petab_model::PEtabModel,
         rename!(data_save, petab_problem.θ_names)
         data_save[!, :Method_info] .= method_info
         data_save[!, :Model] .= petab_model.model_name
-        data_save[!, :abstol] .= ode_solver_gradient.abstol
-        data_save[!, :reltol] .= ode_solver_gradient.reltol
+        data_save[!, :abstol] .= ode_solver_gradient.abstol_adj
+        data_save[!, :reltol] .= ode_solver_gradient.reltol_adj
         data_save[!, :I_parameter] .= iParameter
         data_save[!, :solver] .= ode_solver_name
         if isfile(path_save_gradient)
@@ -180,7 +180,7 @@ if ARGS[1] == "Test_adjoint_random_p"
         dir_model = joinpath(@__DIR__, "..", "Master-Thesis", "Intermediate", "PeTab_models", model_test)
     end
     path_yaml = joinpath(dir_model, model_test * ".yaml")
-    petab_model = PEtabModel(path_yaml, build_julia_files=true)
+    petab_model = PEtabModel(path_yaml, build_julia_files=true, verbose=false)
 
     path_cube = joinpath(@__DIR__, "..", "Intermediate", "Parameters_test_gradient", model_test * ".csv")
     cube = Matrix(CSV.read(path_cube, DataFrame))
@@ -189,7 +189,7 @@ if ARGS[1] == "Test_adjoint_random_p"
     for i in 1:50
         @info "i = $i"
         if i == 1
-            _petab_problem = PEtabODEProblem(petab_model)
+            _petab_problem = PEtabODEProblem(petab_model; verbose=false)
             θ_est = _petab_problem.θ_nominalT
         else
             θ_est = cube[i, :]
@@ -198,8 +198,10 @@ if ARGS[1] == "Test_adjoint_random_p"
             reltol, abstol= tols
             for j in eachindex(ode_solvers)
                 # Check Gradient
-                ode_solver = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol)
-                ode_solver_gradient = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol)
+                ode_solver = ODESolver(ode_solvers[j], abstol=1e-8, reltol=1e-8)
+                ode_solver_gradient = ODESolver(ode_solvers[j], abstol=1e-8, reltol=1e-8,
+                                                solver_adj=ode_solvers[j], abstol_adj=abstol,
+                                                reltol_adj=reltol)
                 for sensealgInfo in sensealgsCheck
                     benchmarkCostGrad(petab_model, path_save, sensealgInfo, ode_solver, ode_solver_gradient, ode_solvers_name[j], false, θ_est, path_save_gradient=path_save_gradient, n_repeat=5)
                 end
