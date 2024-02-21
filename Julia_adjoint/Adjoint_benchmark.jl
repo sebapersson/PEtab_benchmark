@@ -99,6 +99,14 @@ function benchmarkCostGrad(petab_model::PEtabModel,
         println("BGrad = ", run_time)
     end
 
+    if !any(isinf.(run_time))
+        gradient_ref = similar(θ_est)
+        petab_problem.compute_gradient!(gradient_ref, θ_est)
+    else
+        gradient_ref = similar(θ_est)
+        gradient_ref .= 0.0
+    end
+
     writeParamFixed = isnothing(nParamFixed) ? 0 : nParamFixed
     data_save = DataFrame(Time = run_time,
                          What_calc=what_compute,
@@ -118,7 +126,7 @@ function benchmarkCostGrad(petab_model::PEtabModel,
     end
 
     if !isnothing(path_save_gradient)
-        data_save = DataFrame(reshape(gradient, 1, length(gradient)), :auto)
+        data_save = DataFrame(reshape(gradient_ref, 1, length(gradient_ref)), :auto)
         rename!(data_save, petab_problem.θ_names)
         data_save[!, :Method_info] .= method_info
         data_save[!, :Model] .= petab_model.model_name
@@ -164,7 +172,7 @@ if ARGS[1] == "Test_adjoint_random_p"
                       [:Adjoint, GaussAdjoint(autojacvec=ReverseDiffVJP(false)), "GaussAdjoint(autojacvec=ReverseDiffVJP(false))"],
                       [:Adjoint, GaussAdjoint(autojacvec=EnzymeVJP()), "GaussAdjoint(autojacvec=EnzymeVJP())"]]
 
-    tolerances = [[1e-8, 1e-8], [1e-8, 1e-6]]
+    tolerances = [[1e-8, 1e-8], [1e-8, 1e-5], [1e-8, 1e-4]]
     dtmin = 1e-14
     if model_test != "Smith_BMCSystBiol2013"
         dir_model = joinpath(@__DIR__, "..", "Master-Thesis", "Intermediate", "PeTab_models", "model_" * model_test)
@@ -190,16 +198,16 @@ if ARGS[1] == "Test_adjoint_random_p"
             reltol, abstol= tols
             for j in eachindex(ode_solvers)
                 # Check Gradient
-                ode_solver = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol, dtmin=dtmin)
-                ode_solver_gradient = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol, dtmin=dtmin)
+                ode_solver = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol)
+                ode_solver_gradient = ODESolver(ode_solvers[j], abstol=abstol, reltol=reltol)
                 for sensealgInfo in sensealgsCheck
                     benchmarkCostGrad(petab_model, path_save, sensealgInfo, ode_solver, ode_solver_gradient, ode_solvers_name[j], false, θ_est, path_save_gradient=path_save_gradient, n_repeat=5)
                 end
             end
         end
 
-        ode_solver = ODESolver(Rodas4P(), abstol=1e-8/100, reltol=1e-8/100, dtmin=dtmin)
-        ode_solver_gradient = ODESolver(Rodas4P(), abstol=1e-8/100, reltol=1e-8/100, dtmin=dtmin)
+        ode_solver = ODESolver(Rodas5(), abstol=1e-8/100, reltol=1e-8/100)
+        ode_solver_gradient = ODESolver(Rodas5(), abstol=1e-8/100, reltol=1e-8/100)
         benchmarkCostGrad(petab_model, path_save, [:ForwardDiff, nothing, "ForwardDiff"], ode_solver, ode_solver_gradient, "Rodas4P", false, θ_est, path_save_gradient=path_save_gradient, n_repeat=5)
     end
 end
