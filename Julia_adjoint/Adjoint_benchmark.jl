@@ -172,7 +172,7 @@ if ARGS[1] == "Test_adjoint_random_p"
                       [:Adjoint, GaussAdjoint(autojacvec=ReverseDiffVJP(false)), "GaussAdjoint(autojacvec=ReverseDiffVJP(false))"],
                       [:Adjoint, GaussAdjoint(autojacvec=EnzymeVJP()), "GaussAdjoint(autojacvec=EnzymeVJP())"]]
 
-    tolerances = [[1e-8, 1e-8], [1e-8, 1e-5], [1e-8, 1e-4]]
+    tolerances = [[1e-8, 1e-8], [1e-8, 1e-4], [1e-8, 1e-3]]
     dtmin = 1e-14
     if model_test != "Smith_BMCSystBiol2013"
         dir_model = joinpath(@__DIR__, "..", "Master-Thesis", "Intermediate", "PeTab_models", "model_" * model_test)
