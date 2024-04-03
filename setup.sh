@@ -26,3 +26,8 @@ bash setup.sh
 
 cd ..
 echo "Done setting up"
+
+# Download the stochastic benchmark (is setup by a local script)
+echo "Cloning stochastic benchmark repo"
+git clone https://github.com/sebapersson/Stochastic_benchmark.git
+echo "Done"

@@ -76,6 +76,39 @@ The available optimization algorithms that can be provided for Julia are:
 
 For pyPESTO, Fides with different Hessian approximations is used.
 
+### Running the Bruno parameter estimation benchmark in Julia
+
+To run the Bruno benchmark a different approach is used, because due to a bug in an earlier PEtab version the benchmark was performed using a later version of PEtab.jl (2.14.0). To perform the Bruno parameter estimation benchmark, enter the *Julia_new_pest* directory. Here, initialize the Julia environment by executing the following command in the Julia REPL:
+
+```julia
+] instantiate
+```
+
+Afterward, the benchmark can be initiated from within the *Julia_new_pest* directory using the command:
+
+```bash
+path_to_julia --threads=1 --project=. Run_bruno.jl
+```
+
 ### Processing Results
 
 The parameter estimation results can be processed using the *Process_results.R* script (make sure to run it from the script's location to set the path correctly). This script will generate individual convergence plots for each model, as well as summary visuals and tables. The results can be found in the *Results/Parameter_estimation* folder.
+
+## Stochastic simulators benchmark
+
+### Running the Benchmark
+
+The stochastic simulators benchmark is located in the *Stochastic_benchmark* folder, which is download by the `setup.sh` script. Within the *Stochastic_benchmark* directory, there's another `setup.sh` script dedicated to installing the necessary packages for conducting the benchmark using SBMLImporter, RoadRunner, ReactionNetworkImporters, and PySB. In the `setup.sh` we recommend to use, as in the benchmarks, Julia version 1.10.
+
+To execute the benchmark, navigate to the specific software directory and initiate one of the provided bash scripts. For instance, to run the benchmark with SBMLImporter using the `RSSACR` simulator, enter the following commands in a bash terminal:
+
+```bash
+cd SBMLImporter
+bash run_benchmarks_sbmlimporter_ssa_RSSACR_1.sh
+```
+
+This process will execute the benchmark for several models; multistate, mulisite3, egfr_net, and fceri_gamma2. Note that the BCR model requires a separate script. The benchmarks are divided across multiple bash scripts to facilitate workload parallelization.
+
+### Processing Results
+
+The results can be processed using the *Plot.R* script (make sure to run it from the script's location to set the path correctly) in the *Plots* folder. This script will generate individual all the plots found in the paper.

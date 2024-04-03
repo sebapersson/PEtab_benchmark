@@ -41,7 +41,6 @@ get_name_order <- function(stat_file, stat_names)
   return(order(fval))
 }
 
-
 get_pyPesto_results <- function(model_name)
 {
   
@@ -131,7 +130,7 @@ process_model <- function(model_name, ylim=NULL, jl_solver=NULL)
   data_pyPesto <- get_pyPesto_results(model_name) |> 
     mutate(software = "PyPesto")
   
-  data_tot <- get_rank(data_julia |> 
+  data_tot <- get_rank(drop_na(data_julia) |> 
                          select(Cost, Run_time, Alg, Solver, N_iter, software) |> 
                          bind_rows(data_pyPesto) |> 
                          mutate(Cost_norm = Cost - min(Cost) + 1)) |> 
@@ -251,7 +250,7 @@ process_model("Fujita_SciSignal2010", ylim=c(0.9, 1e9))
 
 process_model("Brannmark_JBC2010", ylim=c(0.9, 1e9))
 
-process_model("Bruno_JExpBot2016", jl_solver="Rodas5P")
+process_model("Bruno_JExpBot2016")
 
 process_model("Weber_BMC2015", ylim=c(0.9, 1e9))
 
@@ -277,13 +276,15 @@ process_model("Rahman_MBS2016")
 
 process_model("Isensee_JCB2018")
 
+model_name <- "Isensee_JCB2018"
+
 process_model("Oliveira_NatCommun2021")
 
 
 # ---------------------------------------------------------------------------------------------------------
 # Process subproblem solver for fides 
 # ---------------------------------------------------------------------------------------------------------
-model_names = c("Boehm_JProteomeRes2014", "Fiedler_BMC2016", "Crauste_CellSystems2017")
+model_names = c("Boehm_JProteomeRes2014", "Fiedler_BMC2016", "Crauste_CellSystems2017", "Fujita_SciSignal2010")
 data_plot = tibble()
 for(model_name in model_names){
   dir_julia <- str_c("Master-Thesis/Intermediate/Benchmarks/Parameter_estimation/model_", model_name, "/")
@@ -482,7 +483,6 @@ data_sum <- data_plot |>
             n_models = n(),
             speedup = mean(mean_run_time_pyPesto / mean_run_time))
 
-
 # Convergence data 
 data_bfgs_fim_conv <- data_converged |> 
   filter(Alg %in% c("Fides BFGS", "Fides FIM", "PyPesto Fides BFGS", "PyPesto Fides FIM")) |> 
@@ -624,5 +624,3 @@ data_fim <- data_plot |>
   filter(Alg.x != "Fides full H") |> 
 
 ggsave(str_c(dir_save, "Trust_vs_interior.svg"), p, width = BASE_WIDTH*1.5, height = BASE_WIDTH*1.5)
-
-
